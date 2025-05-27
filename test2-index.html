@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Flexbox Grid</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .container {
+      width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      border: 1px solid #ccc;
+    }
+
+    .square {
+      box-sizing: border-box;
+      border: 1px solid #eee;
+      background-color: white;
+    }
+
+    .square.hovered {
+      background-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="resetBtn">Reset Grid</button>
+  <div class="container" id="container"></div>
+
+  <script>var a = elementparser.dom;</script>
+  <script>
+    var a = elementparser.dom;
+    const container = document.getElementById('container');
+    const resetBtn = document.getElementById('resetBtn');
+    const containerWidth = 960;
+
+    // Create grid with N squares per side
+    function createGrid(squaresPerSide) {
+      // Clear existing grid
+      container.innerHTML = '';
+
+      const totalSquares = squaresPerSide * squaresPerSide;
+      const squareSize = containerWidth / squaresPerSide;
+
+      for (let i = 0; i < totalSquares; i++) {
+        const square = document.createElement('div');
+        square.classList.add('square');
+        square.style.width = `${squareSize}px`;
+        square.style.height = `${squareSize}px`;
+
+        square.addEventListener('mouseenter', () => {
+          square.classList.add('hovered');
+        });
+
+        container.appendChild(square);
+      }
+    }
+
+    // Initial 16x16 grid
+    createGrid(16);
+
+    // Handle grid reset
+    resetBtn.addEventListener('click', () => {
+      let userInput = prompt('Enter number of squares per side (max 100):');
+      const num = parseInt(userInput);
+
+      if (isNaN(num) || num < 1 || num > 100) {
+        alert('Please enter a valid number between 1 and 100.');
+      } else {
+        createGrid(num);
+      }
+    });
+  </script>
+
+</body>
+</html>
