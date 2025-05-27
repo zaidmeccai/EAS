@@ -2,87 +2,240 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dynamic Flexbox Grid</title>
+  <title>Etch a Sketch Bitch</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-color: #f7f9fc;
+      --text-color: #2c3e50;
+      --container-bg: white;
+      --square-hover: #3498db;
+      --btn-bg: #2c3e50;
+      --btn-hover: #34495e;
+    }
+
+    body.dark {
+      --bg-color: #1e1e1e;
+      --text-color: #ecf0f1;
+      --container-bg: #2b2b2b;
+      --square-hover: #e67e22;
+      --btn-bg: #444;
+      --btn-hover: #555;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 30px;
     }
 
     button {
-      padding: 10px 20px;
-      margin-bottom: 20px;
-      font-size: 16px;
+      background-color: var(--btn-bg);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--btn-hover);
+      transform: scale(1.05);
     }
 
     .container {
       width: 960px;
-      margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
-      border: 1px solid #ccc;
+      background: var(--container-bg);
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
     }
 
     .square {
-      box-sizing: border-box;
-      border: 1px solid #eee;
-      background-color: white;
+      border: 1px solid #ecf0f1;
+      transition: background-color 0.3s;
     }
 
     .square.hovered {
-      background-color: #3498db;
+      background-color: var(--square-hover);
+    }
+
+    @media (max-width: 1000px) {
+      .container {
+        width: 90vw;
+      }
+    }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      min-width: 300px;
+      text-align: center;
+    }
+
+    .modal-content.dark {
+      background: #2c3e50;
+      color: white;
+    }
+
+    .modal-content input {
+      padding: 10px;
+      font-size: 16px;
+      width: 80%;
+      margin-top: 10px;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
 
-  <button id="resetBtn">Reset Grid</button>
+  <h1>Etch a Sketch Bitch</h1>
+
+  <div class="button-group">
+    <button id="resetBtn">Reset Grid</button>
+    <button id="changeGridBtn">Change Grid Size</button>
+    <button id="eraserBtn">Toggle Eraser</button>
+    <button id="darkModeBtn">Toggle Dark Mode</button>
+  </div>
+
   <div class="container" id="container"></div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent">
+      <h2>Enter Grid Size (max 100)</h2>
+      <input type="number" id="gridInput" min="1" max="100">
+      <br>
+      <button id="applyGridBtn">Apply</button>
+    </div>
+  </div>
 
   <script>
     const container = document.getElementById('container');
     const resetBtn = document.getElementById('resetBtn');
-    const containerWidth = 960;
+    const changeGridBtn = document.getElementById('changeGridBtn');
+    const eraserBtn = document.getElementById('eraserBtn');
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const applyGridBtn = document.getElementById('applyGridBtn');
+    const gridInput = document.getElementById('gridInput');
 
-    // Create grid with N squares per side
-    function createGrid(squaresPerSide) {
-      // Clear existing grid
+    let eraserMode = false;
+    let currentSize = 16;
+
+    function createGrid(size) {
       container.innerHTML = '';
+      const total = size * size;
+      const containerWidth = container.clientWidth;
+      const squareSize = containerWidth / size;
 
-      const totalSquares = squaresPerSide * squaresPerSide;
-      const squareSize = containerWidth / squaresPerSide;
-
-      for (let i = 0; i < totalSquares; i++) {
+      for (let i = 0; i < total; i++) {
         const square = document.createElement('div');
         square.classList.add('square');
         square.style.width = `${squareSize}px`;
         square.style.height = `${squareSize}px`;
 
         square.addEventListener('mouseenter', () => {
-          square.classList.add('hovered');
+          if (eraserMode) {
+            square.classList.remove('hovered');
+          } else {
+            square.classList.add('hovered');
+          }
         });
 
         container.appendChild(square);
       }
+
+      currentSize = size;
     }
 
-    // Initial 16x16 grid
-    createGrid(16);
-
-    // Handle grid reset
     resetBtn.addEventListener('click', () => {
-      let userInput = prompt('Enter number of squares per side (max 100):');
-      const num = parseInt(userInput);
+      createGrid(16);
+    });
 
-      if (isNaN(num) || num < 1 || num > 100) {
-        alert('Please enter a valid number between 1 and 100.');
+    changeGridBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      gridInput.value = currentSize;
+    });
+
+    applyGridBtn.addEventListener('click', () => {
+      const size = parseInt(gridInput.value);
+      if (!isNaN(size) && size > 0 && size <= 100) {
+        createGrid(size);
+        modal.style.display = 'none';
       } else {
-        createGrid(num);
+        alert("Please enter a valid number (1-100)");
       }
     });
-  </script>
 
+    eraserBtn.addEventListener('click', () => {
+      eraserMode = !eraserMode;
+      eraserBtn.textContent = eraserMode ? "Eraser: ON" : "Eraser: OFF";
+    });
+
+    darkModeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      modalContent.classList.toggle('dark');
+    });
+
+    // Close modal on outside click
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Initial Grid
+    createGrid(16);
+
+    // Re-render on resize
+    window.addEventListener('resize', () => createGrid(currentSize));
+  </script>
 </body>
 </html>
